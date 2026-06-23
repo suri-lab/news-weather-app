@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tailwind v4: 클래스 기반 다크모드 활성화 (.dark 클래스가 html에 있을 때) */
+@variant dark (&:where(.dark, .dark *));
+
 /* 다크모드 트랜지션 */
 * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
