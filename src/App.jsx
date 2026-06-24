@@ -70,7 +70,7 @@ function MainApp() {
                   text-white font-medium
                   transition-colors cursor-pointer"
               >
-                🔑 관리자 로그인 / 가입
+                🔑 관리자 로그인
               </button>
             )}
 
@@ -79,7 +79,7 @@ function MainApp() {
         </div>
       </header>
 
-      {/* 관리자 로그인/가입 모달 */}
+      {/* 관리자 로그인 모달 */}
       {showModal && <AdminAuthModal onClose={() => setShowModal(false)} />}
 
       {/* 메인 콘텐츠 */}

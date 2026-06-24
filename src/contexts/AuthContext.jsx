@@ -12,25 +12,11 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const register = async (username, password) => {
-    const res = await fetch('/api/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', username, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-    // 가입 후 자동 로그인
-    const session = { username: data.username };
-    setAdmin(session);
-    localStorage.setItem('admin_session', JSON.stringify(session));
-  };
-
   const login = async (username, password) => {
     const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', username, password }),
+      body: JSON.stringify({ username, password }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
@@ -45,7 +31,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ admin, login, register, logout }}>
+    <AuthContext.Provider value={{ admin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
