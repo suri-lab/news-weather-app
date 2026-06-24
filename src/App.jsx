@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
 import WeatherWidget from './components/WeatherWidget';
 import NewsGrid from './components/NewsGrid';
 import DarkModeToggle from './components/DarkModeToggle';
+import AnnouncementSection from './components/AnnouncementSection';
 import { useWeather } from './hooks/useWeather';
 import { useNews } from './hooks/useNews';
 
-export default function App() {
-  // 시스템 다크모드 설정을 기본값으로 사용
+function MainApp() {
+  const { user, logout } = useAuth();
+
   const [isDark, setIsDark] = useState(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches
   );
@@ -14,7 +18,6 @@ export default function App() {
   const { weather, loading: weatherLoading, error: weatherError, searchCity } = useWeather('Busan');
   const { news, loading: newsLoading, error: newsError, category, changeCategory } = useNews('전체');
 
-  // 다크모드 클래스 적용
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -22,6 +25,8 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  if (!user) return <LoginPage />;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -40,6 +45,22 @@ export default function App() {
             <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:block">
               {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
             </span>
+            {/* 사용자 정보 */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-600 dark:text-gray-300 hidden sm:block">
+                {user.role === 'admin' ? '🔑' : '👤'} {user.name}
+              </span>
+              <button
+                onClick={logout}
+                className="text-xs px-3 py-1.5 rounded-lg
+                  bg-gray-100 hover:bg-gray-200
+                  dark:bg-gray-700 dark:hover:bg-gray-600
+                  text-gray-600 dark:text-gray-300
+                  transition-colors cursor-pointer"
+              >
+                로그아웃
+              </button>
+            </div>
             <DarkModeToggle isDark={isDark} onToggle={() => setIsDark(!isDark)} />
           </div>
         </div>
@@ -47,8 +68,10 @@ export default function App() {
 
       {/* 메인 콘텐츠 */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
+        {/* 공지사항 */}
+        <AnnouncementSection />
 
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* 왼쪽: 날씨 위젯 (30%) */}
           <aside className="w-full lg:w-[30%] lg:min-w-[280px] lg:max-w-[360px]">
             <div className="lg:sticky lg:top-20">
@@ -71,7 +94,6 @@ export default function App() {
               onCategoryChange={changeCategory}
             />
           </section>
-
         </div>
       </main>
 
@@ -82,5 +104,13 @@ export default function App() {
         <p className="mt-1">© 2025 한국 뉴스 & 날씨 대시보드</p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }
