@@ -1,5 +1,5 @@
 import { Droplets, Wind, Thermometer, MapPin } from 'lucide-react';
-import SearchBar from './SearchBar';
+import CitySelector from './CitySelector';
 
 // 날씨 코드 → 한국어 설명
 function getWeatherDesc(id) {
@@ -63,7 +63,7 @@ export default function WeatherWidget({ weather, loading, error, onSearch }) {
               <p className="text-white/90 text-sm">{error}</p>
             </div>
           </div>
-          <SearchBar onSearch={onSearch} placeholder="다시 검색..." />
+          <CitySelector onSearch={onSearch} />
         </div>
       )}
 
@@ -116,7 +116,7 @@ export default function WeatherWidget({ weather, loading, error, onSearch }) {
           </div>
 
           {/* 도시 검색 */}
-          <SearchBar onSearch={onSearch} placeholder="지역 검색 (예: 강남구, 해운대구)..." />
+          <CitySelector onSearch={onSearch} />
         </div>
       )}
     </div>
