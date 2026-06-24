@@ -116,7 +116,7 @@ export default function WeatherWidget({ weather, loading, error, onSearch }) {
           </div>
 
           {/* 도시 검색 */}
-          <SearchBar onSearch={onSearch} placeholder="도시명 검색 (예: 서울, 부산)..." />
+          <SearchBar onSearch={onSearch} placeholder="지역 검색 (예: 강남구, 해운대구)..." />
         </div>
       )}
     </div>
