@@ -1,39 +1,51 @@
 import { createContext, useContext, useState } from 'react';
 
-// 계정 정보 (실제 서비스라면 서버에서 검증해야 함)
-const USERS = {
-  admin: { password: 'admin1234', role: 'admin', name: '관리자' },
-  user:  { password: 'user1234',  role: 'user',  name: '일반사용자' },
-};
-
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
+  const [admin, setAdmin] = useState(() => {
     try {
-      const saved = localStorage.getItem('auth_user');
+      const saved = localStorage.getItem('admin_session');
       return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
   });
 
-  const login = (username, password) => {
-    const found = USERS[username];
-    if (!found || found.password !== password) return false;
-    const userData = { username, role: found.role, name: found.name };
-    setUser(userData);
-    localStorage.setItem('auth_user', JSON.stringify(userData));
-    return true;
+  const register = async (username, password) => {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'register', username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    // 가입 후 자동 로그인
+    const session = { username: data.username };
+    setAdmin(session);
+    localStorage.setItem('admin_session', JSON.stringify(session));
+  };
+
+  const login = async (username, password) => {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', username, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    const session = { username: data.username };
+    setAdmin(session);
+    localStorage.setItem('admin_session', JSON.stringify(session));
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('auth_user');
+    setAdmin(null);
+    localStorage.removeItem('admin_session');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ admin, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

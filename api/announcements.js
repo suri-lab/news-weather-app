@@ -1,4 +1,3 @@
-// 인메모리 공지사항 저장소 (서버 재시작 시 초기화됨 - 데모용)
 let announcements = [];
 
 export default function handler(req, res) {
@@ -13,11 +12,22 @@ export default function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { content } = req.body;
+    const { action, content, id } = req.body || {};
+
+    // 좋아요
+    if (action === 'like') {
+      const item = announcements.find((a) => a.id === Number(id));
+      if (!item) return res.status(404).json({ error: '없는 공지입니다.' });
+      item.likes = (item.likes || 0) + 1;
+      return res.status(200).json({ likes: item.likes });
+    }
+
+    // 공지 등록
     if (!content?.trim()) return res.status(400).json({ error: '내용을 입력해주세요.' });
     const item = {
       id: Date.now(),
       content: content.trim(),
+      likes: 0,
       createdAt: new Date().toISOString(),
     };
     announcements.unshift(item);

@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function AnnouncementSection() {
-  const { user } = useAuth();
+  const { admin } = useAuth();
   const [announcements, setAnnouncements] = useState([]);
   const [content, setContent] = useState('');
   const [posting, setPosting] = useState(false);
-
-  const isAdmin = user?.role === 'admin';
+  // 이 기기에서 좋아요 누른 공지 ID 목록
+  const [likedIds, setLikedIds] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('liked_ids') || '[]'); }
+    catch { return []; }
+  });
 
   useEffect(() => {
     fetch('/api/announcements')
@@ -39,12 +42,28 @@ export default function AnnouncementSection() {
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
   };
 
+  const handleLike = async (id) => {
+    if (likedIds.includes(id)) return; // 이미 좋아요
+    const res = await fetch('/api/announcements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'like', id }),
+    });
+    const { likes } = await res.json();
+    setAnnouncements((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, likes } : a))
+    );
+    const updated = [...likedIds, id];
+    setLikedIds(updated);
+    localStorage.setItem('liked_ids', JSON.stringify(updated));
+  };
+
   const formatDate = (iso) =>
     new Date(iso).toLocaleString('ko-KR', {
       month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
 
-  if (!isAdmin && announcements.length === 0) return null;
+  if (!admin && announcements.length === 0) return null;
 
   return (
     <div className="mb-6 rounded-2xl border border-blue-200 dark:border-blue-800
@@ -55,7 +74,7 @@ export default function AnnouncementSection() {
       </h2>
 
       {/* 관리자 작성 폼 */}
-      {isAdmin && (
+      {admin && (
         <form onSubmit={handlePost} className="flex gap-2 mb-4">
           <input
             type="text"
@@ -89,18 +108,36 @@ export default function AnnouncementSection() {
             <li key={a.id}
               className="flex items-start justify-between gap-3
                 bg-white dark:bg-gray-800 rounded-xl px-4 py-3">
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-800 dark:text-gray-200">{a.content}</p>
                 <p className="text-xs text-gray-400 mt-1">{formatDate(a.createdAt)}</p>
               </div>
-              {isAdmin && (
+
+              <div className="flex items-center gap-2 shrink-0">
+                {/* 좋아요 버튼 */}
                 <button
-                  onClick={() => handleDelete(a.id)}
-                  className="text-red-400 hover:text-red-600 text-xs shrink-0 cursor-pointer"
+                  onClick={() => handleLike(a.id)}
+                  disabled={likedIds.includes(a.id)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs
+                    font-medium transition-colors cursor-pointer
+                    ${likedIds.includes(a.id)
+                      ? 'bg-pink-100 dark:bg-pink-900 text-pink-500 dark:text-pink-300 cursor-default'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-pink-50 hover:text-pink-500 dark:hover:bg-pink-900 dark:hover:text-pink-300'
+                    }`}
                 >
-                  삭제
+                  {likedIds.includes(a.id) ? '❤️' : '🤍'} {a.likes || 0}
                 </button>
-              )}
+
+                {/* 관리자 삭제 버튼 */}
+                {admin && (
+                  <button
+                    onClick={() => handleDelete(a.id)}
+                    className="text-red-400 hover:text-red-600 text-xs cursor-pointer"
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
