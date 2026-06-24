@@ -1,6 +1,31 @@
 import { Droplets, Wind, Thermometer, MapPin } from 'lucide-react';
 import SearchBar from './SearchBar';
 
+// 날씨 코드 → 한국어 설명
+function getWeatherDesc(id) {
+  if (!id) return '';
+  if (id >= 200 && id < 300) return '천둥번개';
+  if (id >= 300 && id < 400) return '이슬비';
+  if (id === 500) return '비';
+  if (id === 501) return '비';
+  if (id >= 502 && id <= 504) return '폭우';
+  if (id === 511) return '진눈깨비';
+  if (id >= 520 && id < 600) return '소나기';
+  if (id >= 600 && id < 700) return '눈';
+  if (id === 701 || id === 741) return '안개';
+  if (id === 711) return '연기';
+  if (id === 721) return '박무';
+  if (id === 731 || id === 761) return '황사';
+  if (id === 771) return '돌풍';
+  if (id === 781) return '태풍';
+  if (id === 800) return '맑음';
+  if (id === 801) return '구름 조금';
+  if (id === 802) return '구름 약간';
+  if (id === 803) return '구름 많음';
+  if (id === 804) return '흐림';
+  return '맑음';
+}
+
 // 날씨 위젯 컴포넌트
 export default function WeatherWidget({ weather, loading, error, onSearch }) {
   // 날씨 상태에 따른 배경 그라디언트 결정
@@ -61,8 +86,8 @@ export default function WeatherWidget({ weather, loading, error, onSearch }) {
             <p className="text-6xl font-thin mt-1">
               {Math.round(weather.main.temp)}°
             </p>
-            <p className="text-lg capitalize mt-1 opacity-90">
-              {weather.weather[0].description}
+            <p className="text-lg mt-1 opacity-90">
+              {getWeatherDesc(weather.weather[0].id)}
             </p>
           </div>
 
@@ -91,7 +116,7 @@ export default function WeatherWidget({ weather, loading, error, onSearch }) {
           </div>
 
           {/* 도시 검색 */}
-          <SearchBar onSearch={onSearch} placeholder="도시명 검색 (영문)..." />
+          <SearchBar onSearch={onSearch} placeholder="도시명 검색 (예: 서울, 부산)..." />
         </div>
       )}
     </div>
