@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// NewsAPI 기본 URL
-const BASE_URL = 'https://newsapi.org/v2';
-
 // 카테고리 매핑 (한국어 → API 파라미터)
 const CATEGORY_MAP = {
   '전체': '',
@@ -18,25 +15,14 @@ export function useNews(initialCategory = '전체') {
   const [category, setCategory] = useState(initialCategory);
 
   const fetchNews = useCallback(async (selectedCategory) => {
-    const apiKey = import.meta.env.VITE_NEWS_API_KEY;
-
-    // API 키 미설정 시 목업 데이터 반환
-    if (!apiKey || apiKey === 'your_key_here') {
-      setNews(getMockNewsData());
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
       const categoryParam = CATEGORY_MAP[selectedCategory] || '';
 
-      // top-headlines country=kr 이 빈 결과를 반환하는 경우가 많아 everything 엔드포인트 사용
       const query = categoryParam ? `한국 ${selectedCategory}` : '한국';
-      const url = `${BASE_URL}/everything?q=${encodeURIComponent(query)}&language=ko&sortBy=publishedAt&pageSize=10&apiKey=${apiKey}`;
+      const url = `/api/news?q=${encodeURIComponent(query)}&language=ko&sortBy=publishedAt&pageSize=10`;
 
       const res = await fetch(url);
 
